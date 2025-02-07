@@ -1,0 +1,115 @@
+@import '../../assets/colors';
+
+.loadingPage {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.loadingAnimationContainer {
+  margin: auto;
+  max-width: 30px;
+  background-color: $navy;
+  border-radius: 20px;
+  overflow: visible;
+  transform: scale(1);
+}
+
+.loadingLine {
+  background-color: $blue;
+  height: 30px;
+  margin: 30px 30px;
+  border-radius: 0 100px 100px 0px;
+}
+
+.one {
+  animation: loading-one 5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear 2s;
+}
+
+.two {
+  animation: loading-two 3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear 2s;
+}
+
+.three {
+  animation: loading-three 10s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear 2s;
+}
+
+@keyframes loading-one {
+  0% {
+    width: 100px
+  }
+
+  ;
+
+  25% {
+    width: 125px
+  }
+
+  50% {
+    width: 100px
+  }
+
+  75% {
+    width: 50px
+  }
+
+  ;
+
+  100% {
+    width: 100px
+  }
+}
+
+@keyframes loading-two {
+  0% {
+    width: 110px
+  }
+
+  ;
+
+  25% {
+    width: 55px
+  }
+
+  50% {
+    width: 68px
+  }
+
+  75% {
+    width: 130px
+  }
+
+  ;
+
+  100% {
+    width: 110px
+  }
+}
+
+@keyframes loading-three {
+  0% {
+    width: 50px
+  }
+
+  ;
+
+  50% {
+    width: 100px
+  }
+
+  75% {
+    width: 66px
+  }
+
+  ;
+
+  100% {
+    width: 50px
+  }
+}

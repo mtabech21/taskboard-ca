@@ -1,0 +1,408 @@
+@import "./colors";
+
+.clock {
+  background-color: whitesmoke;
+  height: 100%;
+  max-height: 100%;
+  min-width: fit-content;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin: 0;
+  text-align: center;
+  z-index: 1;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.clock .userInput {
+  &::placeholder {
+    color: gray;
+  }
+
+  cursor: pointer;
+  height: 50px;
+  width: 150px;
+  font-size: 2.5em;
+  text-align: center;
+  font-weight: 700;
+  font-family: monospace;
+  border: solid 2px black;
+  transition: width 300ms cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  margin: 10px;
+  background-color: whitesmoke;
+
+  &:focus {
+    cursor: text;
+    width: 200px;
+    background-color: white;
+  }
+}
+
+.userInput:focus::placeholder {
+  color: transparent;
+}
+
+.clock .userForm {
+  padding: 0.5em;
+  background-color: white;
+  width: 100%;
+  box-sizing: border-box;
+  user-select: none;
+  min-height: 10em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.clock li {
+  font-family: monospace;
+  font-size: 30px;
+}
+
+.selectOptions {
+  display: flex;
+  justify-content: space-evenly;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  color: $blue;
+
+
+  & div:hover {
+    cursor: pointer;
+    color: rgba(20, 105, 185, 1);
+    border-radius: 1em;
+    text-decoration: underline;
+  }
+
+}
+
+.navButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1em;
+  border-radius: 1em;
+  background: none;
+  aspect-ratio: 1/1;
+  font-size: 2em;
+  color: rgb(20, 20, 20);
+  border: unset;
+
+  &:hover {
+    cursor: pointer;
+    background-color: whitesmoke;
+  }
+}
+
+.userLogBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  user-select: none;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.userLogHeader {
+  display: flex;
+  color: white;
+  align-items: center;
+  font-size: 12px;
+  min-height: 25px;
+  width: 100%;
+  background-color: rgb(30, 30, 30);
+  font-family: monospace;
+  text-align: center;
+  padding-left: 20px;
+  scroll-behavior: none;
+}
+
+.userLogHeaderDiv {
+  display: flex;
+  font-weight: 400;
+  user-select: none;
+}
+
+.headerDivA {
+  flex-grow: 2;
+}
+
+.headerDivB {
+  flex-grow: 1;
+}
+
+.headerDivC {
+  flex-grow: 1;
+}
+
+.statusCircle {
+  width: 50%;
+  height: 100%;
+  margin-left: auto;
+}
+
+.onlineStatusInApp {
+  padding-top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  color: gray;
+  user-select: none;
+  background-color: white;
+
+  &:hover {
+    cursor: default;
+  }
+}
+
+.activeLogDiv {
+  width: 100%;
+  overflow: scroll;
+  scrollbar-width: none;
+  overscroll-behavior: none;
+  font-family: monospace;
+}
+
+.clockSelectType {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background: none;
+  border: none;
+  color: rgb(77, 77, 77);
+  font-size: 12px;
+  border-radius: 20px;
+  padding: 1em;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  &:focus {
+    background-color: rgba(141, 141, 141, 0.1);
+  }
+}
+
+.clockSelectIcon {
+  font-size: 50px;
+  margin-top: 5px;
+}
+
+.logHistorySingle {
+  display: flex;
+  font-family: monospace;
+  font-size: 15px;
+  padding: 5px;
+  gap: 20px;
+  border-top: solid 2px whitesmoke;
+  max-width: inherit;
+  overflow: hidden;
+  user-select: none;
+
+  &:hover {
+    background-color: whitesmoke;
+  }
+}
+
+.reportsLinkDiv {
+  justify-self: flex-end;
+  margin-top: auto;
+  padding: 1em;
+  width: 100%;
+  border-top: 1px solid rgba(136, 136, 136, 0.4);
+  background-color: white;
+  bottom: 0;
+}
+
+.taskboard {
+  display: flex;
+  background-color: white;
+  overflow: hidden;
+  flex-direction: column;
+  height: 100%;
+}
+
+.taskboardTop {
+  background-color: rgb(20, 105, 185);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 2em;
+  overflow: hidden;
+  box-sizing: content-box;
+}
+
+.taskWindow {
+  display: flex;
+  min-height: 100%;
+}
+
+.sideSelectionMenu {
+  height: 100%;
+  min-width: 20em;
+  background-color: whitesmoke;
+  border-right: $grayline;
+  display: flex;
+}
+
+.topMenu {
+  display: flex;
+  height: 30%;
+  background-color: white;
+  border-radius: 1em;
+  border: $grayline;
+}
+
+.bottomMenu {
+  width: 100%;
+  display: flex;
+  background-color: white;
+  justify-content: space-evenly;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.grayTop {
+  border-top: $grayline;
+}
+
+.bottomMenuOption {
+  display: flex;
+  text-align: center;
+  color: $blue;
+  align-items: center;
+  flex-direction: column;
+  background: white;
+  justify-content: center;
+  padding: .5em;
+  margin: 0.2em;
+  border-radius: 1em;
+  aspect-ratio: 1/1;
+
+  &:hover {
+    background-color: whitesmoke;
+    cursor: pointer;
+  }
+}
+
+.sideSelectionMenuFilters {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 3em;
+  background-color: white;
+  border-right: $grayline;
+}
+
+.filterBtn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8em;
+  padding: .3em;
+
+  &:hover {
+    cursor: pointer;
+    background-color: whitesmoke;
+  }
+}
+
+.filterTop {
+  height: 2em;
+  background-color: white;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  font-weight: bold;
+  border-bottom: $grayline;
+}
+
+.tbTop {
+  background-color: white;
+  height: 5%;
+  min-height: 3em;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  align-items: center;
+  border-bottom: $grayline;
+  padding-bottom: 1em;
+  box-sizing: content-box;
+}
+
+.branchProfile {
+  background-color: whitesmoke;
+  height: 100%;
+  width: 10em;
+  border-radius: 1em;
+  display: flex;
+  padding: .2em;
+}
+
+.topStyle {
+  position: relative;
+  background-color: rgb(40, 40, 40);
+  min-width: 100%;
+  height: 3em;
+  border-right: 1px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.singleTask {
+  background-color: white;
+  border-bottom: $grayline;
+  display: flex;
+  min-width: fit-content;
+  overflow: hidden;
+  font-family: monospace;
+
+  &:hover {
+    cursor: pointer;
+    background-color: whitesmoke;
+  }
+}
+
+.assignedTo {
+  position: absolute;
+  transform: translateY(-3em);
+  background-color: white;
+  border-radius: 1em;
+  border: $grayline;
+  color: black;
+  padding: .5em;
+  opacity: 0.9;
+}
+
+.taskListContainer {
+  width: 100%;
+}
+
+.appWindow {
+  height: 100%;
+  max-height: 95%;
+  width: 100%;
+  display: flex;
+  gap: 1em;
+  box-sizing: border-box;
+}

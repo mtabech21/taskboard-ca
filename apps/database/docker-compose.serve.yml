@@ -1,0 +1,22 @@
+services:
+  database:
+    image: postgres:16
+    volumes:
+      - data:/var/lib/postgresql/data
+    ports:
+      - "1021:5432"
+    env_file:
+      - ./.env
+
+  flyway:
+    image: flyway/flyway:10.18.0
+    depends_on:
+      - database
+    volumes:
+      - ./sql:/flyway/sql
+    entrypoint: [ "flyway", "migrate" ]
+    env_file:
+      - ./.env
+
+volumes:
+  data:

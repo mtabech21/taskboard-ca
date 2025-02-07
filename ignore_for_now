@@ -1,0 +1,145 @@
+{
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "apps":true,
+      "libs":true
+    }
+  },
+  "folders": [
+    {
+      "name": "taskboard",
+      "path": "."
+    },
+    {
+      "name": "lib",
+      "path": "libs"
+    },
+    {
+      "name": "database",
+      "path": "apps/database"
+    },
+    {
+      "name": "api",
+      "path": "apps/api/src"
+    },
+    {
+      "name": "portal",
+      "path": "apps/portal/src"
+    },
+    {
+      "name": "hub",
+      "path": "apps/hub/src"
+    },
+    {
+      "name": "landing",
+      "path": "apps/landing/src"
+    }
+  ],
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "database",
+        "command": "npm run db:dev",
+        "icon": {"id": "database", "color": "terminal.ansiRed"},
+        "group": "test",
+        "type": "shell",
+        "isBackground": true,
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+        
+      },
+      {
+        "label": "api",
+        "command": "npm run api:dev",
+        "icon": {"id": "server", "color": "terminal.ansiMagenta"},
+        "group": "test",
+        "type": "shell",
+        "isBackground": true,
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+      },
+      {
+        "label": "portal",
+        "command": "npm run portal:dev",
+        "icon": {"id": "window", "color": "terminal.ansiWhite"},
+        "group": "test",
+        "type": "shell",
+        "isBackground": true,
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+      },      {
+        "label": "hub",
+        "command": "npm run hub:dev",
+        "icon": {"id": "layout-sidebar-left-off", "color": "terminal.ansiCyan"},
+        "group": "test",
+        "type": "shell",
+        "isBackground": true,
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+      },      {
+        "label": "landing",
+        "command": "npm run landing:dev",
+        "icon": {"id": "home", "color": "terminal.ansiBlue"},
+        "group": "test",
+        "type": "shell",
+        "isBackground": true,
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        },
+      },
+      {
+        "label": "dev",
+        "icon": {"id": "run", "color": "terminal.ansiGreen"},
+        "dependsOn": ["database","api","portal","hub","landing"],
+        "runOptions": {"runOn": "folderOpen"},
+        "dependsOrder": "parallel",
+        "isBackground": true,
+        "group": "test",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared",
+          "showReuseMessage": true,
+          "clear": false
+        }
+      },
+    ]
+  }
+}
