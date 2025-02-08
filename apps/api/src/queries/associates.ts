@@ -5,7 +5,7 @@ import { companies } from "./companies"
 import { branches } from "./branches"
 import { positions } from "./positions"
 
-export const associates = Querier.create<Associate>()('payroll.associates', (db) => ({
+export const associates = Querier.create<Associate, NewAssociate>()('payroll.associates', (db) => ({
   badge: (associate_id: UUID) => Querier.tx([associates, companies, branches, positions],
     async ([associates, companies, branches, positions]) => {
       const { badge_number, first_name, last_name, ...associate } = (await associates.select.one({associate_id}))
@@ -25,9 +25,15 @@ export const associates = Querier.create<Associate>()('payroll.associates', (db)
         branch_number,
         position_name
       } as AssociateBadge
-    }),
+    }
+  ),
+  company_badges: (company_id: UUID) => Querier.tx([associates, companies],
+    async ([associates, companies]) => {
+      const { } = (await associates.select.many({ company_id }))
+      return [] as AssociateBadge[]
+    }
 
-  from_company: (company_id: UUID) => associates.select.many({ company_id }),
+  ),
 
   insert: (associate: NewAssociate) => db.tx(async t => {
     const { first_name, last_name, company_id, branch_id, position_id, badge_number} = associate
@@ -39,6 +45,16 @@ export const associates = Querier.create<Associate>()('payroll.associates', (db)
     return await associates.task(t).select.one({associate_id})
   }),
 }))
+
+Querier.join([associates, positions], {
+  select: {
+
+  },
+  on: [['position_id', 'id']],
+  where: {    
+    company_id: '00001'
+  }
+}).then(console.log)
 
 
 

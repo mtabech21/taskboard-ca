@@ -20,7 +20,7 @@ punches_route
   })
   .get(async (req, res) => {
     const branch_id = req.query.branch_id as UUID
-    const punches = await BranchQuerier.get_punches(branch_id)
+    const punches = await BranchQuerier.get_punches(branch_id).catch(() => [])
     res.json(punches)
   })
 

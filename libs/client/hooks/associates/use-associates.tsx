@@ -44,6 +44,6 @@ export const useAssociates = new Contextor((config: { account: ManagerAccount })
   const [search] = useSearchParams()
   const selected = associates.find(p => p.badge_number === search.get('badge_number'))
   const select = (badge_number: string) => navigate({ search: `badge_number=${badge_number}` })
-
+  console.log(groups)
   return { groups, list: associates, selected, select, group_by, filter, set_filter, filter_options };
 })

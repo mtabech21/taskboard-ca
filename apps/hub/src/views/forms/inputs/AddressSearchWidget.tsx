@@ -79,7 +79,7 @@ export function AddressSearchWidget(props: { value: Address | undefined, onChang
 
   useEffect(() => {
     onChange(as.details)
-  }, [as.details, onChange])
+  }, [as.details])
 
   return (
     <div className="flex flex-col gap-5">

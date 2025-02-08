@@ -12,6 +12,9 @@ export default defineConfig(
     server: {
       port: 4021,
       host: 'localhost',
+      watch: {
+        ignored: (file) => !file.startsWith(path.resolve(__dirname))
+      }
     },
 
     plugins: [react()],

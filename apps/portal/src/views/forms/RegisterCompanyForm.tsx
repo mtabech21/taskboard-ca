@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form"
 import { ExternalLink } from "lucide-react"
 import { z } from "zod"
 import { AddressField } from "./fields/AddressField"
-import { User } from "@taskboard/types"
+import { NewCompany, User } from "@taskboard/types"
 import { useAPI } from "@taskboard/client/hooks/global/use-api"
 
 function useNewCompanyForm(token?: string) {
@@ -34,7 +34,7 @@ function useNewCompanyForm(token?: string) {
 
   async function handler(): Promise<void> {
     const values = form.getValues()
-    await api.post<User>(`/company/create`, values, {
+    await api.post(`/company/create`, { domain: values.domain, address: values.address.formatted, name: values.name, place_id_google: values.address.place_id_google } as NewCompany, {
       headers: {
         Authorization: `Bearer ${token}`
       }

@@ -6,7 +6,7 @@ services:
     ports:
       - "1021:5432"
     env_file:
-      - ./.env
+      - ../../.env
 
   flyway:
     image: flyway/flyway:10.18.0
@@ -16,7 +16,7 @@ services:
       - ./sql:/flyway/sql
     entrypoint: [ "flyway", "migrate" ]
     env_file:
-      - ./.env
+      - ../../.env
 
 volumes:
   data:

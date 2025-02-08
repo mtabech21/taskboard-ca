@@ -23,7 +23,8 @@ export const punches = Querier.create<Database.Payroll.Punch>()('payroll.punches
         (timestamp AT TIME ZONE '${timezone}')::date <= '${range.to}'
       ORDER BY timestamp`)
   }),
-  rows_from_range: (associate_id: string, range: { from: string, to: string }, timezone: string = 'EST') => db.tx(async t => {
-    return generateTimecardRows(await punches.task(t).defined.from_range(associate_id,range,timezone))
+  rows_from_range: (associate_id: string, range: { from: string, to: string }, timezone: string = 'EST') => Querier.tx([punches],
+    async ([punches]) => {
+    return generateTimecardRows(await punches.defined.from_range(associate_id,range,timezone))
   }),
 }))

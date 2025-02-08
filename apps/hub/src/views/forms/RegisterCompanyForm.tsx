@@ -2,7 +2,7 @@ import { Button } from "@shad/button"
 import { Card, CardDescription, CardTitle } from "@shad/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@shad/form"
 import { Input } from "@shad/input"
-import { Company, NewCompanyForm } from "@taskboard/types"
+import { Company, NewCompany, NewCompanyForm } from "@taskboard/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -22,6 +22,7 @@ function useNewCompanyForm(token?: string) {
       domain: '',
       name: '',
     }, resolver: zodResolver(NewCompanyForm),
+
   })
 
   const api = useAPI.context()
@@ -29,7 +30,10 @@ function useNewCompanyForm(token?: string) {
 
   const { mutate: post } = useMutation({
     mutationKey: ['new_company'],
-    mutationFn: async () => (await api.post<Company>(`/company/create`, form.getValues())),
+    mutationFn: async () => {
+      const v = form.getValues()
+      await api.post<Company>(`/company/create`, { name: v.name, address: v.address.formatted, domain: v.domain, place_id_google: v.address.place_id_google } as NewCompany)
+    },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ['account'] })
     }

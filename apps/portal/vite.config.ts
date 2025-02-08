@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
+
 export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/portal',
@@ -12,6 +13,9 @@ export default defineConfig({
   server: {
     port: 3021,
     host: 'localhost',
+    watch: {
+      ignored: (file) => file.startsWith(path.resolve(__dirname,'../api'))
+    }
   },
 
   plugins: [react()],

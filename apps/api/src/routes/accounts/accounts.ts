@@ -9,8 +9,8 @@ accounts_route
   .get(async (req, res) => {
     const user = await getRequestUser(res)
     try { res.json(await accounts.defined.manager_from_user_id(user)) } catch {
-      try { res.json(await accounts.defined.associate_from_user_id(user.uuid)) }
-      catch { res.json(null) }
+      try { res.json(await accounts.defined.associate_from_user_id(user.uuid)) } catch
+      { res.json(null) }
     }
   })
 

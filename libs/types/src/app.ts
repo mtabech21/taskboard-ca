@@ -57,15 +57,15 @@ export type FormData = {
   positions: CompanyPosition[]
 }
 export type NewAssociate = {
+  associate_id: string
   first_name: string
   last_name: string
   company_id: string
   branch_id: string
   position_id: string
-  folder_ref: string
-  date_added: string
   badge_number: string
 }
+
 export type AssociatePushData = {
   badge_number: string
   first_name: string

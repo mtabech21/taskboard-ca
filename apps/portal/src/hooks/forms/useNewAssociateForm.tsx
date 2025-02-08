@@ -4,15 +4,11 @@ import { z } from "zod";
 import { AxiosResponse } from "axios";
 
 import { useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Branch, ManagerAccount, NewAssociateForm } from "@taskboard/types";
+import { useCallback, useEffect, useMemo } from "react";
+import { Associate, Branch, ManagerAccount, NewAssociateForm } from "@taskboard/types";
 import { useAPI } from "@taskboard/client/hooks/global/use-api";
 import { toast } from "@taskboard/client/ui/src/hooks/use-toast";
-
-
-
-
-
+import { useQuery } from "@tanstack/react-query";
 
 export function useNewAssociateForm(account: ManagerAccount) {
 
@@ -113,33 +109,36 @@ export function useNewAssociateForm(account: ManagerAccount) {
 
   const selected_branch_id = form.watch('branch_id')
   const badge_number = form.watch('badge_number')
-  const [taken_badge_numbers, set_taken_badge_numbers] = useState<string[]>()
+
+  const { data: used_badges, isSuccess } = useQuery<Pick<Associate, 'badge_number' | 'first_name' | 'last_name'>[]>({
+    queryKey: ['used_badges', account.company.id],
+    queryFn: () => api.get(`/company/used_badges/${account.company.id}`).then(r => r.data)
+  })
+
   const generate_badge_number = useCallback((branch?: Branch): string => {
-    if (taken_badge_numbers) {
+    if (isSuccess) {
       if (branch) {
         const prefix = branch.number.slice(branch.number.length - 2, branch.number.length)
         const gen = () => Math.floor(Math.random() * 10000).toString().padStart(4, '0')
         if (!isNaN(Number(prefix))) {
           let badgenum = prefix + gen()
-          while (taken_badge_numbers.includes(badgenum)) { badgenum = prefix + gen() }
+          while (used_badges.map(b => b.badge_number).includes(badgenum)) { badgenum = prefix + gen() }
           return badgenum
         } else {
           const prefix = '10'
           let badgenum = prefix + gen()
-          while (taken_badge_numbers.includes(badgenum)) {
+          while (used_badges.map(b => b.badge_number).includes(badgenum)) {
             badgenum = prefix + gen()
           }
           return badgenum
         }
       } else { return '' }
     } return ''
-  }, [taken_badge_numbers])
+  }, [used_badges, isSuccess])
   useEffect(() => { form.setValue('badge_number', generate_badge_number(account.branches.find(b => b.id === selected_branch_id)), { shouldValidate: false }) }, [form, generate_badge_number, account.branches, selected_branch_id])
-  const badge_available = useMemo(() => !taken_badge_numbers?.includes(badge_number), [badge_number, taken_badge_numbers])
+  const badge_available = useMemo(() => !used_badges?.map(b => b.badge_number).includes(badge_number), [badge_number, used_badges])
 
   const api = useAPI.context()
-
-  useEffect(() => { api.get(`/company/badge_list/${account.company.id}`).then((r) => { set_taken_badge_numbers(r.data.badge_numbers) }) }, [account.company.id, api])
 
   async function handler(): Promise<void> {
     const values = form.getValues() as NewAssociateForm;
@@ -151,9 +150,7 @@ export function useNewAssociateForm(account: ManagerAccount) {
         {/* <div>{String(res.data)}</div> */}
       </>
     );
-
   }
 
   return { ...form, handler, badge_available, province_mismatch };
-
 }
