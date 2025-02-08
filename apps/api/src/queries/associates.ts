@@ -1,9 +1,10 @@
 import { UUID } from "crypto"
-import Querier from "../tools/querier"
-import { Associate, AssociateBadge, NewAssociate } from "@taskboard/types"
+import Querier, { Queriable } from "../tools/querier"
+import { Associate, AssociateBadge, Branch, Company, CompanyPosition, NewAssociate } from "@taskboard/types"
 import { companies } from "./companies"
 import { branches } from "./branches"
 import { positions } from "./positions"
+
 
 export const associates = Querier.create<Associate, NewAssociate>()('payroll.associates', (db) => ({
   badge: (associate_id: UUID) => Querier.tx([associates, companies, branches, positions],
@@ -27,13 +28,24 @@ export const associates = Querier.create<Associate, NewAssociate>()('payroll.ass
       } as AssociateBadge
     }
   ),
-  company_badges: (company_id: UUID) => Querier.tx([associates, companies],
-    async ([associates, companies]) => {
-      const { } = (await associates.select.many({ company_id }))
-      return [] as AssociateBadge[]
-    }
-
-  ),
+  badges: (...where: [Queriable<Associate>, Queriable<Company>,Queriable<Branch>,Queriable<CompanyPosition>]): Promise<AssociateBadge[]> => Querier.join([associates, companies, branches, positions], {
+    select: [
+      ['associate_id', 'badge_number', 'first_name', 'last_name'],
+      ['id', 'name'],
+      ['id', 'name', 'number'],
+      ['name']
+    ] as const,
+    as: [
+      {},
+      { 'id': 'company_id', 'name': 'company_name' },
+      { 'id': 'branch_id','name': 'branch_name', 'number': 'branch_number' },
+      { 'name':'position_name'}
+    ],
+    on: [
+      { company_id: 'id' }, { branch_id: 'id' }, { position_id: 'id' }
+    ],
+    where
+  }),
 
   insert: (associate: NewAssociate) => db.tx(async t => {
     const { first_name, last_name, company_id, branch_id, position_id, badge_number} = associate
@@ -45,19 +57,6 @@ export const associates = Querier.create<Associate, NewAssociate>()('payroll.ass
     return await associates.task(t).select.one({associate_id})
   }),
 }))
-
-Querier.join([associates, positions], {
-  select: {
-
-  },
-  on: [['position_id', 'id']],
-  where: {    
-    company_id: '00001'
-  }
-}).then(console.log)
-
-
-
 
 
 

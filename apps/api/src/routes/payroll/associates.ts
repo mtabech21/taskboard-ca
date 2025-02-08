@@ -12,10 +12,11 @@ associates_route
   .post(async (req, res, next) => {
     const company_id = req.query.company_id as UUID
     const branch_ids = req.body.branch_ids as string[]
-    if (company_id)
-      res.json(await associates.select.manyOrNone({ company_id }))
-    else if (branch_ids.length > 0)
-      res.json(await associates.select.manyOrNone({ branch_id: branch_ids }))
+    if (company_id) {
+      res.json(await associates.defined.badges('*', { 'id': company_id }, '*', '*'))
+    } else if (branch_ids.length > 0) {
+      res.json(await associates.defined.badges('*', '*', { id: branch_ids }, '*'))
+    }
     else
       next("No Branches")
   })
