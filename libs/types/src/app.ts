@@ -57,7 +57,7 @@ export type FormData = {
   positions: CompanyPosition[]
 }
 export type NewAssociate = {
-  associate_id: string
+  associate_id?: UUID 
   first_name: string
   last_name: string
   company_id: string

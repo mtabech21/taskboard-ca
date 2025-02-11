@@ -1,7 +1,7 @@
-import { Associate, AssociateBadge, AssociateGroupedList, AssociatesFilter, BranchGroup, ManagerAccount, PositionGroup } from "@taskboard/types";
+import { AssociateBadge, AssociateGroupedList, AssociatesFilter, BranchGroup, ManagerAccount, PositionGroup, Punch } from "@taskboard/types";
 import Contextor from "../contextor";
 import { useAPI } from "../global/use-api";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -15,12 +15,20 @@ export const useAssociates = new Contextor((config: { account: ManagerAccount })
   }
 
   const { data: associates } = useQuery({
-    queryKey: ['associate_item_list', account.user.uuid], queryFn: () => {
+    queryKey: ['associate_item_list', account.user.uuid],
+    queryFn: () => {
       return account.is_admin ? api.post<AssociateBadge[]>(`/payroll/associates/list?company_id=${account.company.id}`).then(res => res.data)
         : api.post<AssociateBadge[]>(`/payroll/associates/list`, { branch_ids: account.branches.flatMap(v => v.id) }).then(res => res.data);
     }, initialData: []
   })
 
+  const status_list = useQueries({
+    queries: associates.map(({ associate_id }) => ({
+      queryKey: ['associate_status', associate_id],
+      queryFn: async () => (await api.get<Punch>(`payroll/associates/status/${associate_id}`)).data,
+    })),
+    combine: (r) => r.map((q) => q.data)
+  })
 
   const [grouped_by, group_by] = useState<'Branch' | 'Position'>('Branch')
   const [filter, set_filter] = useState<AssociatesFilter>({ branches: [], positions: [] });
@@ -44,6 +52,6 @@ export const useAssociates = new Contextor((config: { account: ManagerAccount })
   const [search] = useSearchParams()
   const selected = associates.find(p => p.badge_number === search.get('badge_number'))
   const select = (badge_number: string) => navigate({ search: `badge_number=${badge_number}` })
-  console.log(groups)
-  return { groups, list: associates, selected, select, group_by, filter, set_filter, filter_options };
+
+  return { groups, list: associates, selected, select, group_by, filter, set_filter, filter_options, status_list };
 })

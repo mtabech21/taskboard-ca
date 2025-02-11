@@ -4,8 +4,8 @@ import db from "../../db";
 import { AssociatePayrollReport, AssociatePunches, BranchPayrollReport } from "@taskboard/types";
 import { branches } from "../../queries/branches";
 
-export class BranchQuerier {
 
+export class BranchQuerier {
   static async get_punches(branch_id: UUID): Promise<AssociatePunches[]> {
     const timezone = 'EST'
     const q1 = `

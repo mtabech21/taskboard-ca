@@ -1,5 +1,5 @@
 import { UUID } from "crypto"
-import { AssociateBadge } from "./associate"
+import { Associate } from "./associate"
 import { Branch } from "../company/branch"
 
 
@@ -9,17 +9,15 @@ export type InPunch = 'in'
 export type OutPunch = "meal" | "out"
 
 export interface TimecardPunchOut {
-  id: string
+  id: UUID
   timestamp: Date
-  associate_id: UUID
   branch_id: UUID
   type: OutPunch
 }
 
 export interface TimecardPunchIn {
-  id: string
+  id: UUID
   timestamp: Date
-  associate_id: UUID
   branch_id: UUID
   type: InPunch
 }
@@ -39,10 +37,10 @@ export type TimecardRow = {
 export type TimecardPeriod = "current_pay_period" | "previous_pay_period" | "year_to_date" | "month_to_date" | "week_to_date" | "previous_month" | "previous_week"
 
 export type TimecardData = {
-  associate: AssociateBadge
+  associate: Associate
   date_range: {
-    from: Date,
-    to: Date
+    from: string,
+    to: string
   },
   rows: TimecardRow[]
   statuatory: TimecardStatuatoryData | null

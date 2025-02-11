@@ -2,7 +2,6 @@
 import express from 'express'
 import { AssociateQuerier } from '../../db/payroll/Associate'
 import { BranchQuerier } from '../../db/public/Branch'
-import { TimecardPunch } from '@taskboard/types'
 import { UUID } from 'crypto'
 import { punches } from '../../queries/punches'
 import { find_stat_holiday } from '../../tools/find-stat-holiday'
@@ -13,7 +12,8 @@ punches_route
   .route('')
   .post(async (req, res) => {
     try {
-      res.json(await AssociateQuerier.punch(req.body as TimecardPunch))
+      // res.json(await AssociateQuerier.punch(req.body as TimecardPunch))
+      res.send()
     } catch (e) {
       res.status(400).json({ error_message: (e as Error).message })
     }

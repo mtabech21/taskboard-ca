@@ -5,7 +5,7 @@ import { AxiosResponse } from "axios";
 
 import { useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo } from "react";
-import { Associate, Branch, ManagerAccount, NewAssociateForm } from "@taskboard/types";
+import { Associate, Branch, ManagerAccount, NewAssociate, NewAssociateForm } from "@taskboard/types";
 import { useAPI } from "@taskboard/client/hooks/global/use-api";
 import { toast } from "@taskboard/client/ui/src/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -142,7 +142,14 @@ export function useNewAssociateForm(account: ManagerAccount) {
 
   async function handler(): Promise<void> {
     const values = form.getValues() as NewAssociateForm;
-    const res = await api.post<NewAssociateForm, AxiosResponse<NewAssociateForm>>('/payroll/associates/new', values);
+    const res = await api.post<NewAssociate, AxiosResponse<NewAssociateForm>>('/payroll/associates/new', {
+      badge_number: values.badge_number,
+      branch_id: values.branch_id,
+      company_id: account.company.id,
+      first_name: values.first_name,
+      last_name: values.last_name,
+      position_id: values.position_id
+    } as NewAssociate);
     nav(`/associates/profiles?badge_number=${res.data.badge_number}`)
     toast(
       <>

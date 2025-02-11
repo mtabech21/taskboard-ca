@@ -4,6 +4,9 @@ import { Branch } from "./company/branch";
 type Foreign<TTable, TKey> = TKey
 
 export namespace Database {
+  export namespace AssociateFiles {
+
+  }
   export namespace Public {
     export interface Company {
       id: UUID,
@@ -28,13 +31,13 @@ export namespace Database {
       associate_id: Foreign<Associate, UUID>,
       branch_id: Foreign<Branch, UUID>,
       type: PunchType,
-      modification_request: Date,
+      modification_request?: Date,
       timestamp: Date,
-      approver: boolean
+      approved: boolean
     }
 
     export interface Associate {
-      associate_id: UUID,
+      id: UUID,
       first_name: string,
       last_name: string,
       company_id: Foreign<Public.Company, UUID>,

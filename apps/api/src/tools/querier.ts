@@ -1,67 +1,67 @@
+import { Orderable, Queriable } from "@taskboard/types";
 import db, { Database, Task } from "../db";
-
-export type Queriable<T> = { [K in keyof T]?: unknown | unknown[] } | '*'
 
 type On<T extends object, TOther extends object> = { [K in keyof T]?: keyof TOther }
 type AsForColumns<T extends readonly string[]> =
   Partial<Record<T[number], string>>;
 type TAsFromTColumns<TColumns extends readonly (readonly any[])[]> = {
     [K in keyof TColumns]: AsForColumns<TColumns[K]>
-};  
+}; 
 type UnionToIntersection<U> =
   (U extends any ? (x: U) => any : never) extends (x: infer I) => any ? I : never;
-
 type RemapKeys<T, M extends Partial<Record<keyof T, string>>> = {
     [K in keyof T as K extends keyof M ? (M[K] extends string ? M[K] : K) : K]: T[K]
   };
 type TableOf<T> = T extends Querier<infer R, any, any> ? R : never;
-
-function whereString<T>(where: Queriable<T>, table?: string): string | undefined {
+type SelectOptions<T, TKey> = { order_by?: Orderable<T>, select?: TKey[], limit?: number, handleQuery?: (q: string) => void }
+function whereString<T>(where: Queriable<T> | '*', table?: string): string | undefined {
+  if (where == '*') return
   const t = table ?? ''
   let wheres: string[] = []
-  if (where != '*') {
-    Object.entries(where).forEach(([key, value]) => {
-      switch (typeof value) {
-        case "string":
-          wheres.push(`${t}${key} = '${value}'`); break;
-        case "bigint":
-        case "number":
-        case "boolean":
-          wheres.push(`${t}${key} = ${value}`); break;
-        case "object":
-          wheres.push(`${t}${key} IN ('${(value as Array<any>).join(`','`)}')`); break;
-      }
-    })
-  } else
-    return
-  return `${table ? '' : 'WHERE '}${wheres.join(' AND ')}`
+  const custom_where = where.where; where.where = undefined
+  Object.entries(where).forEach(([key, value]) => {
+    switch (typeof value) {
+      case "string":
+        wheres.push(`${t}${key} = '${value}'`); break;
+      case "bigint":
+      case "number":
+      case "boolean":
+        wheres.push(`${t}${key} = ${value}`); break;
+      case "object":
+        wheres.push(`${t}${key} IN ('${(value as Array<any>).join(`','`)}')`); break;
+    }
+  })
+  if (custom_where) wheres.push(...custom_where)
+  return `${table ? '' : 'WHERE '}${wheres.join(' AND ')} `
 }
 
 export default class Querier<TTable extends object, TInsert extends object, TDefinedQueries> {
   private table_name; task; defined;
-  select; insert; delete;
+  select; insert; update; delete;
+
   
-  private select_queries = (db: Database) => {
+
+  private select_queries = (db: Database) => {    
+    const q = <TKey extends keyof TTable>(where: Queriable<TTable>, options?: SelectOptions<TTable, TKey>) => {
+      const where_query = whereString(where) ?? ''
+      const order = options?.order_by ? 'ORDER BY ' + options.order_by.join(', ') : ''
+      const limit = options?.limit ? `LIMIT ${options.limit}` : ''
+      const q = `SELECT ${options?.select ? options.select.join(',') : '*'} FROM ${this.table_name} ${where_query}${order} ${limit}`
+      options?.handleQuery && options.handleQuery(q)
+      return q
+    }
     return {
-      one: <TKey extends keyof TTable>(where: Queriable<TTable>, columns?: TKey[]) => {
-        const where_query = whereString(where) ?? ''
-        const q = `SELECT ${columns ? columns.join(',') : '*'} FROM ${this.table_name} ${where_query}`
-        return columns ? db.one<Pick<TTable, TKey>>(q) : db.one<TTable>(q)
+      one: <TKey extends keyof TTable>(where: Queriable<TTable>, options?: SelectOptions<TTable, TKey>) => {
+        return options?.select ? db.one<Pick<TTable, TKey>>(q(where,options)) : db.one<TTable>(q(where,options))
       },
-      many: <TKey extends keyof TTable>(where: Queriable<TTable>, columns?: TKey[]) => {
-        const where_query = whereString(where) ?? ''
-        const q = `SELECT ${columns ? columns.join(',') : '*'} FROM ${this.table_name} ${where_query}`
-        return columns ? db.many<Pick<TTable, TKey>>(q) : db.many<TTable>(q)
+      many: <TKey extends keyof TTable>(where: Queriable<TTable>, options?: SelectOptions<TTable, TKey>) => {
+        return options?.select ? db.many<Pick<TTable, TKey>>(q(where,options)) : db.many<TTable>(q(where,options))
       },
-      oneOrNone: <TKey extends keyof TTable>(where: Queriable<TTable>, columns?: TKey[]) => {
-        const where_query = whereString(where) ?? ''
-        const q = `SELECT ${columns ? columns.join(',') : '*'} FROM ${this.table_name} ${where_query}`
-        return columns ? db.oneOrNone<Pick<TTable, TKey>>(q) : db.oneOrNone<TTable>(q)
+      oneOrNone: <TKey extends keyof TTable>(where: Queriable<TTable>, options?: SelectOptions<TTable, TKey>) => {
+        return options?.select ? db.oneOrNone<Pick<TTable, TKey>>(q(where,options)) : db.oneOrNone<TTable>(q(where,options))
       },
-      manyOrNone: <TKey extends keyof TTable>(where: Queriable<TTable>, columns?: TKey[]) => {
-        const where_query = whereString(where) ?? ''
-        const q = `SELECT ${columns ? columns.join(',') : '*'} FROM ${this.table_name} ${where_query}`
-        return columns ? db.manyOrNone<Pick<TTable, TKey>>(q) : db.manyOrNone<TTable>(q)
+      manyOrNone: <TKey extends keyof TTable>(where: Queriable<TTable>, options?: SelectOptions<TTable, TKey>) => {
+        return options?.select ? db.manyOrNone<Pick<TTable, TKey>>(q(where,options)) : db.manyOrNone<TTable>(q(where,options))
       },
     }
   }
@@ -117,27 +117,61 @@ export default class Querier<TTable extends object, TInsert extends object, TDef
       return confirm && db.manyOrNone<TTable>(q)
     }
   }
+  private update_queries = (db: Database) => {
+    return (where: Queriable<TTable>, to: Partial<TTable>) => {
+      const where_query = whereString(where) ?? ''
+      const update_query = Object.entries(to).map((v) => {
+        let value
+        switch (typeof v[1]) {
+          case "string":
+            value = `'${v}'`; break;
+          case "number":
+          case "bigint":
+          case "boolean":
+            value = v; break;
+          case "symbol":
+          case "undefined":
+          case "function":
+            value = "null"; break;
+          case "object":
+            value = `'{${Array(v).join(",")}}'`;break
+        }
+        return `${v[0]} = ${value}`
+      }).join(', ')
+
+      const q = `UPDATE ${this.table_name} SET ${update_query} ${where_query} RETURNING *`
+      console.log(q)
+      return db.many<TTable>(q)
+    }
+  }
+
   constructor(table_name: string, queries: (database: Database) => TDefinedQueries) {
     this.table_name = table_name
+
     this.select = this.select_queries(db)
     this.insert = this.insert_query(db)
-    this.defined = queries(db)
+    this.update = this.update_queries(db)
     this.delete = this.delete_queries(db)
-
+    
+    this.defined = queries(db)
+    
     this.task = (t: Task) => ({
       select: this.select_queries(t),
       insert: this.insert_query(t),
+      update: this.update_queries(t),
+      delete: this.delete_queries(t),
+
       defined: queries(t),
-      delete: this.delete_queries(t)
     })
   }
+
   static async join<TFirst extends Querier<any, any, any>,TOthers extends [...Querier<any,any,any>[]],TQueriers extends [TFirst, ...TOthers],TColumns extends { [K in keyof TQueriers]: readonly (keyof TableOf<TQueriers[K]>)[] },TAs extends TAsFromTColumns<TColumns>,TResult extends UnionToIntersection<{[K in keyof TQueriers]: RemapKeys<Pick<TableOf<TQueriers[K]>, TColumns[K][number]>,TAs[K]>}[number]>> (
     queriers: [TFirst, ...TOthers],
     query: {
       select?: TColumns
       as?: TAs
       on: { [K in keyof TOthers]: On<TableOf<TFirst>,TableOf<TOthers[K]>> }
-      where?: { [K in keyof TQueriers]: Queriable<TableOf<TQueriers[K]>> }
+      where?: { [K in keyof TQueriers]: Queriable<TableOf<TQueriers[K]> > | '*' }
     },
   ) {
 

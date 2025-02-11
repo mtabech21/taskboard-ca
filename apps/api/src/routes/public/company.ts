@@ -20,8 +20,8 @@ company
 
     const badges = Querier.tx([associates, accounts],
       async ([associates, accounts]) => {
-        const { is_admin } = await accounts.select.one({user_id},['is_admin'])
-        const badge_numbers = await associates.select.many({ company_id }, is_admin ? ['badge_number', 'first_name', 'last_name'] : ['badge_number']).catch(() => [])
+        const { is_admin } = await accounts.select.one({ user_id }, { select: ['is_admin']})
+        const badge_numbers = await associates.select.many({ company_id }, { select: is_admin ? ['badge_number', 'first_name', 'last_name'] : ['badge_number'] }).catch(() => [])
         return badge_numbers
       }
     )

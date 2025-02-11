@@ -42,10 +42,9 @@ export const useRow = new Contextor((config: { row?: TimecardRow }) => {
   }, [row, day, table.set_edited_rows])
 
   const delete_row = useCallback(() => {
-    console.log('deleting', row)
     table.set_edited_rows(p => {
       const l = [...p]
-      return l.filter(p => { console.log(p.id, row?.id); return p.id !== row?.id })
+      return l.filter(p => p.id !== row?.id)
     })
   }, [row, table.set_edited_rows])
 
@@ -66,7 +65,7 @@ export const useRow = new Contextor((config: { row?: TimecardRow }) => {
   const set_in_time = useCallback((time: string) => {
     if (time.length !== 0) {
       const new_row: TimecardRow = row ? { ...row } : { id: uuid() as UUID, date: day.date }
-      const new_punch = { branch_id: associate.branch_id, ...row?.in, timestamp: getTimestamp(time, day.date) } as TimecardPunchIn
+      const new_punch = { branch_id: associate.branch_id, ...row?.in, timestamp: getTimestamp(time, day.date), type: 'in' } as TimecardPunchIn
       new_row.in = new_punch
       edit_row(new_row)
     } else {
@@ -83,9 +82,10 @@ export const useRow = new Contextor((config: { row?: TimecardRow }) => {
       // const overlapping_row = table.overlaps(timestamp, row)
       // if (overlapping_row) { toast({ title: 'Overlapping Punches' }); reject(overlapping_row); return }
       const punch = {
+        type: 'out',
+        branch_id: associate.branch_id,
         ...new_row.out,
         timestamp,
-        type: 'out'
       } as TimecardPunchOut
       if (time.length !== 0) {
         new_row.out = punch

@@ -1,5 +1,5 @@
 import db from "../../db";
-import { PunchType, TimecardPunch } from "@taskboard/types";
+import { TimecardPunch } from "@taskboard/types";
 import { UUID } from "crypto";
 
 export class AssociateQuerier {
@@ -45,50 +45,50 @@ export class AssociateQuerier {
     return await db.oneOrNone<TimecardPunch>(q1) ?? { timestamp: new Date(0), type: 'out' } as TimecardPunch
   }
 
-  static async punch(data: TimecardPunch): Promise<null> {
-    const latest_punch = await this.get_latest_punch(data.associate_id)
-    const is_first_ever = new Date(0).valueOf() === latest_punch.timestamp.valueOf()
-    const is_repeat = latest_punch.type == data.type
-    const is_different_branch = data.branch_id != latest_punch.branch_id
-    const is_after_latest_punch = new Date(data.timestamp).valueOf() > new Date(latest_punch.timestamp).valueOf()
-    // const is_different_day = new Date(latest_punch.timestamp).getDate() > new Date(data.timestamp).getDate()
-    const is_long_shift = latest_punch.type == 'in' && (((new Date(data.timestamp).valueOf() - new Date(latest_punch.timestamp).valueOf()) / 1000 / 60 / 60) > 12)
+  // static async punch(data: TimecardPunch): Promise<null> {
+  //   const latest_punch = await this.get_latest_punch(data.associate_id)
+  //   const is_first_ever = new Date(0).valueOf() === latest_punch.timestamp.valueOf()
+  //   const is_repeat = latest_punch.type == data.type
+  //   const is_different_branch = data.branch_id != latest_punch.branch_id
+  //   const is_after_latest_punch = new Date(data.timestamp).valueOf() > new Date(latest_punch.timestamp).valueOf()
+  //   // const is_different_day = new Date(latest_punch.timestamp).getDate() > new Date(data.timestamp).getDate()
+  //   const is_long_shift = latest_punch.type == 'in' && (((new Date(data.timestamp).valueOf() - new Date(latest_punch.timestamp).valueOf()) / 1000 / 60 / 60) > 12)
 
-    function insert_punch(time_value: number, associate_id: UUID, branch_id: UUID, type: PunchType) {
-      const time = new Date(time_value)
-      time.setMilliseconds(0)
-      time.setSeconds(0)
-      return `INSERT INTO payroll.punches(timestamp, associate_id, branch_id, type)
-      VALUES ((to_timestamp(${time.valueOf()} / 1000.0)),'${associate_id}','${branch_id}','${type}')`;
-    }
+  //   function insert_punch(time_value: number, associate_id: UUID, branch_id: UUID, type: PunchType) {
+  //     const time = new Date(time_value)
+  //     time.setMilliseconds(0)
+  //     time.setSeconds(0)
+  //     return `INSERT INTO payroll.punches(timestamp, associate_id, branch_id, type)
+  //     VALUES ((to_timestamp(${time.valueOf()} / 1000.0)),'${associate_id}','${branch_id}','${type}')`;
+  //   }
 
-    if (!is_first_ever && is_long_shift) { throw new Error('Shift Is Too Long') }
+  //   if (!is_first_ever && is_long_shift) { throw new Error('Shift Is Too Long') }
 
-    if (is_after_latest_punch) {
-      if (!is_different_branch) {
-        if (!is_repeat) { return db.none(insert_punch(Date.now(), data.associate_id, data.branch_id, data.type)) }
-        else { return null }  // ^^^^   IF SAME BRANCH    ^^^^ //
-      } else {                // vvvv IF DIFFERENT BRANCH vvvv //
-        if (is_repeat) {
-          if (data.type == 'in') {
-            return await db.tx(t => {
-              t.none(insert_punch(new Date(data.timestamp).valueOf(), data.associate_id, latest_punch.branch_id, 'out'))
-              t.none(insert_punch(new Date(data.timestamp).valueOf(), data.associate_id, data.branch_id, 'in'))
-              return null
-            })
-          } else { return null }
-        } else {
-          if (latest_punch.branch_id == undefined) { return db.none(insert_punch(Date.now(), data.associate_id, data.branch_id, data.type)) } else {
-            return await db.tx(t => {
-              t.none(`UPDATE payroll.punches SET type = 'out' WHERE id = '${latest_punch.id}'`)
-              t.none(insert_punch(Date.now(), data.associate_id, data.branch_id, data.type))
-              return null
-            })
-          }
-        }
-      }
-    } else { throw new Error('Has Future Punch') }
-  }
+  //   if (is_after_latest_punch) {
+  //     if (!is_different_branch) {
+  //       if (!is_repeat) { return db.none(insert_punch(Date.now(), data.associate_id, data.branch_id, data.type)) }
+  //       else { return null }  // ^^^^   IF SAME BRANCH    ^^^^ //
+  //     } else {                // vvvv IF DIFFERENT BRANCH vvvv //
+  //       if (is_repeat) {
+  //         if (data.type == 'in') {
+  //           return await db.tx(t => {
+  //             t.none(insert_punch(new Date(data.timestamp).valueOf(), data.associate_id, latest_punch.branch_id, 'out'))
+  //             t.none(insert_punch(new Date(data.timestamp).valueOf(), data.associate_id, data.branch_id, 'in'))
+  //             return null
+  //           })
+  //         } else { return null }
+  //       } else {
+  //         if (latest_punch.branch_id == undefined) { return db.none(insert_punch(Date.now(), data.associate_id, data.branch_id, data.type)) } else {
+  //           return await db.tx(t => {
+  //             t.none(`UPDATE payroll.punches SET type = 'out' WHERE id = '${latest_punch.id}'`)
+  //             t.none(insert_punch(Date.now(), data.associate_id, data.branch_id, data.type))
+  //             return null
+  //           })
+  //         }
+  //       }
+  //     }
+  //   } else { throw new Error('Has Future Punch') }
+  // }
 
 
 

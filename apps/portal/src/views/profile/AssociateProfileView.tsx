@@ -1,102 +1,77 @@
-
-import { WarningCard } from "./components/WarningCard";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Card } from "@shad/card";
 import { Separator } from "@shad/separator";
-import { AssociateItem, Warning } from "@taskboard/types";
+import { AssociateBadge, Punch } from "@taskboard/types";
 import { useAPI } from "@taskboard/client/hooks/global/use-api";
+import { Badge } from "@shad/badge";
+import { cn } from "@taskboard/client/ui/src/utils";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@shad/hover-card";
+import { useAssociates } from "@taskboard/client/hooks/associates/use-associates";
 
 
-
-export type PlacePrediction = {
-  placePrediction: {
-    place: string,
-    placeId: string,
-    text: {
-      text: string,
-      matches: {
-        startOffset?: number
-        endOffset?: number
-      }[],
-    }
-  }
-}
-
-
-
-
-type PersonalData = {
-  first_name: string
-  last_name: string
-
-}
-
-type ProfileData = {
-  id: string
-  personal: PersonalData
-  employment: 'EmploymentData'
-  payroll: 'PayrollData'
-  bank: 'BankData'
-  warnings: Warning[]
-}
-
-const AssociateProfileSchema = z.object({
-  first_name: z.string(),
-  last_name: z.string(),
-  branch_id: z.string().uuid()
-})
-
-const loadErrorWarning = { level: '!!!', title: `Cannot Manage Profile`, message: `Profile manager is still under development and cannot be used at the moment.` } as Warning
-
-function useAssociateProfile(info: AssociateItem) {
+function useAssociateProfile(badge: AssociateBadge) {
   const api = useAPI.context()
-  const [data, setData] = useState<ProfileData>()
-  const [warnings, setWarnings] = useState<Warning[]>([])
-
-  useEffect(() => {
-    setData(undefined)
-    api.get<ProfileData>(`/payroll/associates/profile?id=${info.associate_id}`).then((v) => {
-      v.data && setData(v.data)
-    }).catch(() => {
-      setData({} as ProfileData)
-      setWarnings([loadErrorWarning])
-    })
-  }, [info, api])
-
-  const form = useForm<z.infer<typeof AssociateProfileSchema>>({
-    resolver: zodResolver(AssociateProfileSchema),
+  const [] = useQueries({
+    queries: [
+      {
+        queryKey: ['associate_personal_data', badge.associate_id],
+        queryFn: async () => await api.get(`/payroll/associates/profile?id=${badge.associate_id}`)
+      }
+    ]
   })
 
-  return { data, form, info, warnings }
+  return { badge }
 }
 
-export function AssociateProfileView(props: { associate: AssociateItem }) {
+export function AssociateProfileView(props: { associate: AssociateBadge }) {
 
   const profile = useAssociateProfile(props.associate)
 
   return (
-    <div className="flex flex-1 flex-col justify-start w-full p-8 gap-3 overflow-scroll">
-      <div className="text-left flex justify-between h-fit">
-        <div>
-          <div className="text-4xl">{profile.info.last_name}, {profile.info.first_name}</div>
-          <div className="text-sm font-mono">{profile.info.position_name}</div>
-        </div>
-        <div className="font-mono text-2xl bg-slate-600 text-white h-fit px-1 rounded">{profile.info.branch_number}</div>
-      </div>
-      {profile.data &&
-        <>
-          {profile.warnings.map((w, i) => (<WarningCard key={i} warning={w} />))}
-          <PersonalCard />
-          <EmploymentCard />
-          <PayrollCard />
-          <BankCard />
-        </>
-      }
+    <div className="flex flex-1 flex-col justify-start p-5 w-full gap-3 overflow-scroll">
+      <AssociateBadgeHeader badge={profile.badge} />
+      <>
+        <PersonalCard />
+        <EmploymentCard />
+        <PayrollCard />
+        <BankCard />
+      </>
     </div>
   );
+}
+
+export function AssociateBadgeHeader(props: { badge: AssociateBadge, className?: string }) {
+  const { badge } = props
+  const { status_list } = useAssociates.context()
+  const status = status_list.find(p => p?.associate_id == badge.associate_id)
+
+  return (
+    <div className={cn("text-left flex justify-between h-fit", props.className)}>
+      <div className="flex flex-col gap-2">
+        <div>
+          <div className="text-4xl flex items-center gap-2">
+            <div>{badge.last_name}, {badge.first_name}</div>
+          </div>
+          <div className="text-xl text-gray-600">{badge.position_name}</div>
+        </div>
+        <div className="flex items-center gap-2 text-sm font-mono">
+          <Badge>{badge.branch_number}</Badge>
+          <div>{badge.branch_name}</div>
+        </div>
+      </div>
+      <div className="flex gap-2 flex-col items-end">
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <div className={cn("font-mono text-2xl bg-slate-600 text-white h-fit px-1 rounded w-fit", { 'bg-green-600': status?.type == 'in', 'bg-gray-600': status?.type == 'out', 'bg-yellow-500': status?.type == 'meal' },)}>{badge.badge_number}</div>
+          </HoverCardTrigger>
+          <HoverCardContent asChild>
+            <div>dads</div>
+          </HoverCardContent>
+        </HoverCard>
+
+      </div>
+    </div>
+  )
 }
 
 function PayrollCard() {

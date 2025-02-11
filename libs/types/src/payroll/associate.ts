@@ -1,13 +1,13 @@
 
 import { UUID } from "crypto"
-import { TimecardPunch, PunchType } from "./timecard"
+import { TimecardPunch } from "./timecard"
 import { CompanyPosition } from "../company/company"
 import { Branch } from "../company/branch"
 import { Database } from "../database"
 
 export type Associate = Database.Payroll.Associate
 
-export interface AssociateAccount extends AssociateBadge{
+export interface AssociateAccount extends AssociateBadge {
   is_manager: false
 }
 
@@ -24,13 +24,7 @@ export interface AssociateBadge {
   position_name: string
 }
 
-export type AssociateStatus =
-  AssociateBadge & {
-    status: {
-      punch: PunchType
-      timestamp: Date
-    }
-  }
+export type AssociateStatus = TimecardPunch
 
 export type AssociatePunches = {
   badge: AssociateBadge
@@ -62,3 +56,4 @@ export type AssociatesFilter = {
   branches: Branch[]
   positions: CompanyPosition[]
 }
+
