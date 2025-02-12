@@ -1,10 +1,10 @@
 import { NewUser, User } from "@taskboard/types";
-import Querier from "../tools/querier";
 import { hash } from "argon2";
 import { decrypt } from "../secret";
+import { db } from "..";
 
-export const users = Querier.create<User>()('auth.users', (db) => ({
-  new: (user: NewUser) => db.tx(async t => {
+export const users = db.querier<User>()('auth.users', (task) => ({
+  new: (user: NewUser) => task.tx(async t => {
     const { enc_pass, email, first_name, last_name } = user
     const password = decrypt(enc_pass)
     const hashed = await hash(password)

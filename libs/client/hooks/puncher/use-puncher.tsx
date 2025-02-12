@@ -1,4 +1,4 @@
-import { AssociateBadge, AssociatePunches, Branch, PunchType, TimecardPunch } from "@taskboard/types"
+import { AssociateBadge, AssociatePunches, Branch, NewPunch, PunchType, TimecardPunch } from "@taskboard/types"
 import { useCallback, useState } from "react"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { UUID } from "crypto"
@@ -6,6 +6,7 @@ import Contextor from "../contextor"
 import { useAPI } from "../global/use-api"
 import useClock from "./use-clock"
 import { useToast } from "@taskboard/client/ui/src/hooks/use-toast"
+import { useAssociates } from "../associates/use-associates"
 
 export const usePuncher = new Contextor((config: { branch: Branch }) => {
   const { branch } = config
@@ -13,11 +14,13 @@ export const usePuncher = new Contextor((config: { branch: Branch }) => {
   const { toast } = useToast()
 
   const [punchingFor, setPunchingFor] = useState<AssociateBadge | null>(null)
+
   const punchesQuery = useQuery<AssociatePunches[]>({
     initialData: [],
     queryKey: ['punches', branch.id],
-    queryFn: async () => (await api.get(`/payroll/associates/punches?branch_id=${branch.id}`)).data,
+    // queryFn: async () => (await api.get(`/payroll/associates/punches?branch_id=${branch.id}`)).data,
   })
+  const { status_list } = useAssociates.context()
 
   const punchMutation = useMutation({
     mutationKey: ['associate_punch'],
@@ -30,12 +33,12 @@ export const usePuncher = new Contextor((config: { branch: Branch }) => {
       punchData.timestamp = timestamp
       punchData.type = punch.type
       if (punchData.type) {
-        api.post('/payroll/associates/punches', {
+        api.post('/payroll/associates/punch/', {
           timestamp: punchData.timestamp,
           associate_id: punch.user_id,
           type: punchData.type,
           branch_id: branch.id
-        } as TimecardPunch)
+        } as NewPunch)
           .then(() => {
             punchesQuery.refetch()
             toast({ title: 'Successfully Punched' })
@@ -79,6 +82,6 @@ export const usePuncher = new Contextor((config: { branch: Branch }) => {
     })
   }, [punches])
 
-  return { clock, punch, badges, punches, punchingFor, setPunchingFor, getTotals }
+  return { clock, punch, badges, punches, punchingFor, setPunchingFor, getTotals, status_list }
 })
 

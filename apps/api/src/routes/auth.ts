@@ -4,8 +4,9 @@ import argon from 'argon2'
 import { decrypt } from "../secret";
 import { NewUser, User } from "@taskboard/types";
 import { Auth } from "../tools/xms";
-import db from "../db";
+
 import { users } from "../queries/users";
+import { db } from "..";
 
 export const auth = new Auth({
   ACCESS_SECRET: String(process.env.ACCESS_SECRET),
@@ -65,15 +66,15 @@ auth_route
     }
     try {
       if (key == 'new') {
-        res.json([`${process.env.PORTAL_ORIGIN_URL}/register/company?key=${(await db.one(`INSERT INTO portal.company_registration_keys(key) VALUES ('${genKey()}') RETURNING key`)).key}`]).end()
+        res.json([`${process.env.PORTAL_ORIGIN_URL}/register/company?key=${(await db.client.one(`INSERT INTO portal.company_registration_keys(key) VALUES ('${genKey()}') RETURNING key`)).key}`]).end()
       } else
         if (key == 'valid_list') {
-          res.json([...(await db.manyOrNone(`SELECT * FROM portal.company_registration_keys WHERE valid = true`)).map((k) => {
+          res.json([...(await db.client.manyOrNone(`SELECT * FROM portal.company_registration_keys WHERE valid = true`)).map((k) => {
             return `${process.env.PORTAL_ORIGIN_URL}/register/company?key=${k.key}`
           })]).end()
         } else {
           if (key)
-            db.tx<string>(async (t) => {
+            db.client.tx<string>(async (t) => {
               const result = await t.one<{ key: string, valid: boolean }>(`select * from portal.company_registration_keys where key = '${key}'`)
               if (result.key == key && result.valid) {
                 t.none(`UPDATE portal.company_registration_keys SET valid = false WHERE key = '${key}'`)
@@ -137,7 +138,7 @@ auth_route
   .post(async (req, res) => {
     const { email, enc_pass } = req.body
     try {
-      const user = await db.oneOrNone(`SELECT * FROM auth.users WHERE email = '${email}'`)
+      const user = await db.client.oneOrNone(`SELECT * FROM auth.users WHERE email = '${email}'`)
       if (!user) { res.sendStatus(401).end() } else {
 
         const valid = enc_pass && await argon.verify(user.password, decrypt(enc_pass))

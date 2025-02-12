@@ -1,6 +1,6 @@
 import express from 'express'
 import { User } from '@taskboard/types'
-import db from '../../db'
+import { db } from '../..'
 
 
 const tasks = express.Router()
@@ -20,7 +20,7 @@ tasks
     const q = `
     SELECT * FROM tasks.overview WHERE branch_id = '${branch_id}'`
 
-    res.json(await db.manyOrNone(q))
+    res.json(await db.client.manyOrNone(q))
   })
   .post(async (req, res, next) => {
     const { title, created_by, due_date, branch_id, associate_id } = req.body as NewTask
@@ -32,7 +32,7 @@ tasks
       RETURNING task_id`
 
     try {
-      res.json(db.tx(async t => {
+      res.json(db.client.tx(async t => {
         const { task_id } = (await t.one<{ task_id: string }>(q1))
         return task_id
       }))
@@ -47,7 +47,7 @@ tasks
     const { task_id } = req.query
     const user = res.locals.user as User
     try {
-      res.json((await db.one(`INSERT INTO tasks.views(task_id, user_id) VALUES ('${task_id}', '${user.uuid}') RETURNING task_id`)).task_id)
+      res.json((await db.client.one(`INSERT INTO tasks.views(task_id, user_id) VALUES ('${task_id}', '${user.uuid}') RETURNING task_id`)).task_id)
     } catch {
       res.json(task_id)
     }

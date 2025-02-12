@@ -1,24 +1,22 @@
 import { IoPerson } from "react-icons/io5";
 import { Card } from "@shad/card";
-import { useAssociateCard } from "../../../../hooks/puncher/useAssociateCard";
-import { AssociatePunches, TimecardPunch } from "@taskboard/types";
+import { AssociateBadge, Punch, TimecardPunch } from "@taskboard/types";
 
 
 
-function AssociateCard(props: { data: AssociatePunches; }) {
-
-  const { setReveal, latest, span } = useAssociateCard(props.data);
+function AssociateCard(props: { data: { badge: AssociateBadge, status?: Punch } }) {
+  const { badge, status } = props.data
 
   return (
     <Card className="m-1 rounded overflow-hidden hover:bg-gray-100">
-      <div className="flex p-3 h-14 justify-between items-center" onClick={() => setReveal((prev) => !prev)}>
+      <div className="flex p-3 h-14 justify-between items-center">
         <div className="flex items-center justify-between gap-5">
-          <StatusIcon latest={latest} />
-          <div className="whitespace-nowrap font-medium select-none" title={`${props.data.badge.first_name} ${props.data.badge.last_name}`}>
-            {`${props.data.badge.first_name} ${props.data.badge.last_name[0]}.`}
+          {status ? <StatusIcon latest={status} /> : 'NO DATA'}
+          <div className="whitespace-nowrap font-medium select-none" title={`${badge.first_name} ${badge.last_name}`}>
+            {`${badge.first_name} ${badge.last_name[0]}.`}
           </div>
         </div>
-        {latest.timestamp && <LatestActivity latest={latest} span={span} />}
+        {status?.timestamp ? <LatestActivity latest={status} span={undefined} /> : 'NO DATA'}
       </div>
       {/* {props.data.punches ? reveal && <AssociateLog data={props.data.punches} /> : null} */}
     </Card >
@@ -47,7 +45,7 @@ function LatestActivity(props: { latest: TimecardPunch, span: string | undefined
   )
 }
 
-function StatusIcon(props: { latest: TimecardPunch }) {
+function StatusIcon(props: { latest: Punch }) {
   const color = `${props.latest.type === 'in' ? "green" : props.latest.type === 'out' ? "gray" : props.latest.type === 'meal' ? "orange" : "red"}`
   return (
     <IoPerson style={{ color: color, fontSize: '1.5em' }} />

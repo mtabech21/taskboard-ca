@@ -1,6 +1,7 @@
-import Querier from "../tools/querier";
-import { Company, NewCompany } from "@taskboard/types";
 
-export const companies = Querier.create<Company, NewCompany>()('public.companies', (db) => ({
+import { Company, NewCompany } from "@taskboard/types";
+import { db } from "..";
+
+export const companies = db.querier<Company, NewCompany>()('public.companies', (task) => ({
   
 }))

@@ -1,5 +1,3 @@
-import { Associate } from "./payroll/associate"
-
 export type Queriable<T> =
   ({ [K in keyof T]?: unknown | unknown[] } & { where?: string[] }) | '*'
 export type Orderable<T> = `${string & keyof T} ${string & 'ASC' | 'DESC'}`[]

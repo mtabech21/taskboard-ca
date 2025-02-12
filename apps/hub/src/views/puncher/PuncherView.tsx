@@ -15,7 +15,7 @@ function PuncherView() {
         <BranchSelection />
         <Clock />
         <PunchInput />
-        <AssociateCardList data={puncher.punches} />
+        <AssociateCardList />
         <BottomBar />
       </div >
     </usePuncher.Provider>

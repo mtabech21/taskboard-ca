@@ -3,6 +3,7 @@ import Contextor from "../contextor";
 import { Branch, ManagerAccount } from "@taskboard/types";
 import { usePuncher } from "../puncher/use-puncher";
 import { useTasks } from "../tasks/use-tasks";
+import { useAssociates } from "../associates/use-associates";
 
 export function branch_sort(a: Branch, b: Branch) {
   const aIsLetter = isNaN(Number(a.number));
@@ -34,10 +35,11 @@ export const useHub = new Contextor((config: { account: ManagerAccount }) => {
     if (branch) setSelectedBranch(branch)
   }
 
+  const associates = useAssociates.init({ account })
   const puncher = usePuncher.init({ branch: selectedBranch })
   const tasks = useTasks(selectedBranch)
 
   useEffect(() => { localStorage.setItem('selected_branch', JSON.stringify(selectedBranch)) }, [selectedBranch])
 
-  return { account, puncher, selectedBranch, selectBranch, tasks }
+  return { account, puncher, associates, selectedBranch, selectBranch, tasks }
 })

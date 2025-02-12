@@ -1,6 +1,6 @@
-import db from "../../db";
 import { TimecardPunch } from "@taskboard/types";
 import { UUID } from "crypto";
+import { db } from "../..";
 
 export class AssociateQuerier {
 
@@ -17,7 +17,7 @@ export class AssociateQuerier {
       (timestamp AT TIME ZONE '${timezone}')::date <= '${to}'`;
 
 
-    await db.tx(async (tx) => {
+    await db.client.tx(async (tx) => {
       await tx.none(q1);
       const insert_punches_list = data.map((p) => {
         const q2 = `
@@ -42,7 +42,7 @@ export class AssociateQuerier {
     WHEN type = 'in' THEN 1
     END
     LIMIT 1`
-    return await db.oneOrNone<TimecardPunch>(q1) ?? { timestamp: new Date(0), type: 'out' } as TimecardPunch
+    return await db.client.oneOrNone<TimecardPunch>(q1) ?? { timestamp: new Date(0), type: 'out' } as TimecardPunch
   }
 
   // static async punch(data: TimecardPunch): Promise<null> {

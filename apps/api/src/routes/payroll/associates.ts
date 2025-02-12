@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from 'express'
 import punches_route from './punches'
 import { UUID } from 'crypto'
 import { associates } from '../../queries/associates'
-import { Associate, NewAssociate } from '@taskboard/types'
+import { Associate, NewAssociate, NewPunch } from '@taskboard/types'
 import { getIO } from '../../tools/io'
 
 const associates_route = express.Router()
@@ -73,6 +73,13 @@ associates_route
     const {associate_id} = req.params
     res.json(await associates.defined.day_activity(associate_id as UUID))
   })
+associates_route
+  .route('/punch')
+  .get( async (req, res, next) => {
+    const punch_data = req.body as NewPunch
+    res.json(await associates.defined.punch(punch_data))
+  })
+
 
  
 

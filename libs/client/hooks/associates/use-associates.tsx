@@ -2,10 +2,16 @@ import { AssociateBadge, AssociateGroupedList, AssociatesFilter, BranchGroup, Ma
 import Contextor from "../contextor";
 import { useAPI } from "../global/use-api";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
 
-export const useAssociates = new Contextor((config: { account: ManagerAccount }) => {
+export const useAssociates = new Contextor((config: {
+  account: ManagerAccount, options?: {
+    handleSelection?: {
+      onSelect: (badge: AssociateBadge) => void
+      selected: (badges: AssociateBadge[]) => AssociateBadge | undefined
+    }
+  }
+}) => {
   const { account } = config
 
   const api = useAPI.context()
@@ -29,6 +35,7 @@ export const useAssociates = new Contextor((config: { account: ManagerAccount })
     })),
     combine: (r) => r.map((q) => q.data)
   })
+  console.log(status_list)
 
   const [grouped_by, group_by] = useState<'Branch' | 'Position'>('Branch')
   const [filter, set_filter] = useState<AssociatesFilter>({ branches: [], positions: [] });
@@ -48,10 +55,8 @@ export const useAssociates = new Contextor((config: { account: ManagerAccount })
     }
   }, [associates, grouped_by, filter])
 
-  const navigate = useNavigate()
-  const [search] = useSearchParams()
-  const selected = associates.find(p => p.badge_number === search.get('badge_number'))
-  const select = (badge_number: string) => navigate({ search: `badge_number=${badge_number}` })
+  const select = useCallback(() => config.options?.handleSelection?.onSelect ?? (() => { }), [config])
+  const selected = useMemo(() => config.options?.handleSelection?.selected(associates) ?? undefined, [config])
 
-  return { groups, list: associates, selected, select, group_by, filter, set_filter, filter_options, status_list };
+  return { groups, list: associates, group_by, filter, set_filter, select, selected, filter_options, status_list };
 })

@@ -2,8 +2,9 @@ import express from 'express'
 import { TimecardData } from '@taskboard/types'
 import { associates } from '../../queries/associates'
 import { punches } from '../../queries/punches'
-import Querier from '../../tools/querier'
+
 import { getIO } from '../../tools/io'
+import { db } from '../..'
 
 const timecards = express.Router()
 
@@ -12,7 +13,7 @@ timecards
   .get(async (req, res) => {
     const { from, to } = req.query as { from: string, to: string }
     const { associate_id } = req.params
-    const timecard = Querier.tx([associates, punches],
+    const timecard = db.tx([associates, punches],
       async ([associates, punches]) => {
         return {
           associate: await associates.select.one({id: associate_id}),

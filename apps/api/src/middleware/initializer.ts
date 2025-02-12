@@ -1,9 +1,9 @@
-import db from "../db"
+import { db } from ".."
 import { API_URL, HUB_URL, LANDING_URL, PORTAL_URL } from "../routes/config"
 
 export default function initializer() {
   const head = ` ${'TASK'.black}${'BOARD'.cyan} ${'API'.magenta} `.bgWhite + ' ONLINE '.green.bgBlack
-  db.connect().then(() => {
+  db.client.connect().then(() => {
     console.group(head)
     console.log(`->`.green, 'Connection to database successful'.blue, `<`.green)
     console.log(`-> ${` LANDING `.bgBlue}     ${LANDING_URL}`.blue);

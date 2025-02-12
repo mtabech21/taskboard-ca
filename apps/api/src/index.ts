@@ -1,14 +1,12 @@
+import 'colors'; import 'tsconfig-paths/register'; 
 import { config } from 'dotenv'; config()
-import 'tsconfig-paths/register';
-import 'colors'
-import express from 'express'
-import routes from './routes/routes';
+import XMSDB from 'xmsdb'; export const db = new XMSDB(`${process.env.DATABASE_URL}`)
+import http from 'http'; import { Server } from 'socket.io'; import express from 'express'
+import initializer from './middleware/initializer';
+import configurations, { HUB_URL, LANDING_URL, PORTAL_URL } from './routes/config';
 import public_routes from './routes/public';
 import { authorization } from './routes/auth';
-import configurations, { HUB_URL, LANDING_URL, PORTAL_URL } from './routes/config';
-import initializer from './middleware/initializer';
-import http from 'http'
-import { Server } from 'socket.io'
+import routes from './routes/routes';
 
 const app = express(); app.set('trust proxy', true)
 

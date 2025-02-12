@@ -1,8 +1,8 @@
 
 import { UUID } from "crypto";
-import db from "../../db";
 import { AssociatePayrollReport, AssociatePunches, BranchPayrollReport } from "@taskboard/types";
 import { branches } from "../../queries/branches";
+import { db } from "../..";
 
 
 export class BranchQuerier {
@@ -29,7 +29,7 @@ export class BranchQuerier {
     JOIN payroll.associates ac ON pn.associate_id = ac.associate_id
     GROUP BY ac.associate_id
     HAVING COUNT(CASE WHEN pn.branch_id = '${branch_id}' THEN 1 END) > 0`;
-    const data = await db.manyOrNone<AssociatePunches>(q1);
+    const data = await db.client.manyOrNone<AssociatePunches>(q1);
     for (const a of data) {
       while (a.punches.length > 0 && a.punches[0].type === 'out') {
         a.punches.shift();
@@ -57,7 +57,7 @@ export class BranchQuerier {
 
     // const report_date = new Date()
     const branch = await branches.select.one({ id:branch_id })
-    const distinct_associate_ids = await db.manyOrNone<{ associate_id: UUID }>(q1)
+    const distinct_associate_ids = await db.client.manyOrNone<{ associate_id: UUID }>(q1)
     const associates = [] as AssociatePayrollReport[]
     for (const a of distinct_associate_ids) {
       console.log(a)

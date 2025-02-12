@@ -6,13 +6,23 @@ import { useAssociates } from "../associates/use-associates"
 import { useAPI } from "../global/use-api"
 import Contextor from "../contextor"
 import { getDateRange } from "@taskboard/tools/functions/get-date-range"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 
 
 export const useTimecards = new Contextor((config: { account: ManagerAccount }) => {
+  const navigate = useNavigate()
+  const [search] = useSearchParams()
+  
   const api = useAPI.context()
   const { account } = config
-  const associates = useAssociates.init({ account })
+  const associates = useAssociates.init({
+    account, options: {
+      handleSelection: {
+        onSelect: (b) => navigate({ search: `badge_number=${b}` }),
+        selected: (b) => b.find(p => p.badge_number === search.get('badge_number'))
+    }
+  } })
 
   const [date_range, set_date_range] = useState<DateRange>(getDateRange('current_pay_period'))
 
